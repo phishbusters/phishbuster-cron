@@ -1,0 +1,23 @@
+# Ignora la carpeta del entorno virtual
+phishbusters/
+
+# Ignora los archivos .pyc que se generan cuando ejecutas tu código Python
+*.pyc
+
+# Ignora los archivos de la base de datos SQLite, si los estás utilizando
+*.db
+*.sqlite3
+
+# Ignora los archivos de configuración local que pueden contener información sensible
+*.env
+*.ini
+
+# Ignora los archivos de registro, si los estás generando
+*.log
+
+# Ignora los archivos de la carpeta __pycache__, que se generan automáticamente
+__pycache__/
+
+# Ignora los archivos de configuración de tu IDE (por ejemplo, para PyCharm)
+.idea/
+*.iml

@@ -1,0 +1,7 @@
+tweepy
+pandas
+boto3
+python-dotenv
+pytest
+requests
+flake8
