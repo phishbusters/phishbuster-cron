@@ -23,7 +23,7 @@ class TwitterTweet:
         entities_data = legacy_data.get('entities', {})
         return cls(
             rest_id=payload.get('rest_id', ''),
-            user_id=user_data.get('rest_id', ''),
+            user_id=legacy_data.get('user_id_str', ''),
             full_text=legacy_data.get('full_text', ''),
             created_at=legacy_data.get('created_at', ''),
             retweet_count=legacy_data.get('retweet_count', 0),

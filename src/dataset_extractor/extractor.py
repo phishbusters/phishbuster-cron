@@ -1,10 +1,14 @@
 import pandas as pd
 from collections import Counter
+from.sentiment_analysis import analyze_sentiment
 import re
 
-nlp = spacy.load("es_core_news_sm")
-
 def create_users_csv(user_objects):
+    try:
+        df = pd.read_csv('users.csv', sep='\t')
+    except FileNotFoundError:
+        df = pd.DataFrame()
+
     rows = []
     for user in user_objects:
         row = {
@@ -35,15 +39,21 @@ def create_users_csv(user_objects):
         }
         rows.append(row)
 
-    df = pd.DataFrame(rows)
-    df.to_csv('users.csv', index=False)
+    new_df = pd.DataFrame(rows)
+    df = pd.concat([df, new_df]).drop_duplicates(subset='id', keep='last').reset_index(drop=True)
+    df.to_csv('users.csv', sep='\t', index=False)
 
 
 def create_tweets_csv(tweet_objects):
+    try:
+        df = pd.read_csv('tweets.csv', sep='\t')
+    except FileNotFoundError:
+        df = pd.DataFrame()
+
     rows = []
     for tweet in tweet_objects:
         text = tweet.full_text
-        sentiment = '0'
+        sentiment = analyze_sentiment(text)
         row = {
             'tweet_id': tweet.rest_id,
             'user_id': tweet.user_id,
@@ -59,12 +69,17 @@ def create_tweets_csv(tweet_objects):
         }
         rows.append(row)
 
-    df = pd.DataFrame(rows)
+    new_df = pd.DataFrame(rows)
+    df = pd.concat([df, new_df]).drop_duplicates(subset='tweet_id', keep='last').reset_index(drop=True)
     df.to_csv('tweets.csv', sep='\t', index=False)
 
 def update_users_csv():
-    users_df = pd.read_csv('users.csv')
-    tweets_df = pd.read_csv('tweets.csv', sep='\t')
+    try:
+        users_df = pd.read_csv('users.csv', sep='\t')
+        tweets_df = pd.read_csv('tweets.csv', sep='\t')
+    except FileNotFoundError:
+        return
+
     users_df['response_count'] = 0
     users_df['most_responded_user'] = ''
     users_df['retweet_ratio'] = 0.0
@@ -87,14 +102,16 @@ def update_users_csv():
         users_df.at[index, 'engagement_rate'] = engagement_rate
         users_df.at[index, 'top_words'] = ', '.join([word for word, _ in top_words])
         
-    users_df.to_csv('users_updated.csv', index=False)
+    users_df.to_csv('users_updated.csv', sep='\t', index=False)
 
 def calculate_additional_metrics():
-    # Leer el archivo CSV existente de tweets
-    tweets_df = pd.read_csv('tweets.csv', sep='\t')
+    try:
+        tweets_df = pd.read_csv('tweets.csv', sep='\t')
+    except FileNotFoundError:
+        return
     
     # Inicializar nuevas columnas en el DataFrame de usuarios
-    users_df = pd.read_csv('users_updated.csv')
+    users_df = pd.read_csv('users_updated.csv', sep='\t')
     users_df['hashtags_per_tweet'] = 0.0
     users_df['mentions_per_tweet'] = 0.0
     users_df['duplicate_content_ratio'] = 0.0
@@ -121,4 +138,4 @@ def calculate_additional_metrics():
         users_df.at[index, 'duplicate_content_ratio'] = (len(user_tweets) - unique_tweets) / len(user_tweets) if len(user_tweets) > 0 else 0
     
     # Actualizar el archivo CSV de usuarios
-    users_df.to_csv('users_final.csv', index=False)
+    users_df.to_csv('users_final.csv', sep='\t', index=False)

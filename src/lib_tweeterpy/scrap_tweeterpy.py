@@ -15,8 +15,8 @@ class TwitterDataCollector:
     def is_logged_in(self):
         return self.twitter.logged_in()
 
-    def search_users(self, query, total=None):
-        return self.twitter.search(search_query=query, total=total, search_filter="People")
+    def search_users(self, query, end_cursor=None, total=None):
+        return self.twitter.search(search_query=query, end_cursor=end_cursor, total=total, search_filter="People")
 
     def get_user_info_by_id(self, user_id):
         return self.twitter.get_user_info(user_id)
@@ -27,8 +27,8 @@ class TwitterDataCollector:
     def get_multiple_users_info(self, user_ids):
         return self.twitter.get_multiple_users_data(user_ids)
 
-    def get_user_tweets(self, user_id, with_replies=False, total=None):
-        return self.twitter.get_user_tweets(user_id, with_replies=with_replies, total=total)
+    def get_user_tweets(self, user_id, with_replies=False, total=None, end_cursor=None):
+        return self.twitter.get_user_tweets(user_id, with_replies=with_replies, end_cursor=end_cursor, total=total)
 
     def get_tweet_details(self, tweet_id, with_tweet_replies=False, total=None):
         return self.twitter.get_tweet(tweet_id, with_tweet_replies=with_tweet_replies, total=total)
