@@ -1,6 +1,7 @@
 # Ignora la carpeta del entorno virtual
 phishbusters/
 env/
+Twitter Saved Sessions/
 
 # Ignora los archivos .pyc que se generan cuando ejecutas tu código Python
 *.pyc
