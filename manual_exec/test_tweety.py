@@ -1,7 +1,6 @@
 
 import sys
  
-# adding Folder_2 to the system path
 sys.path.insert(0, 'D:\\Projects\\phishbuster-cron')
 from src.twitter_api.api import TwitterAPI
 import pprint
@@ -17,8 +16,9 @@ def test_twitter_api():
     #     print('\n---\n')
 
     clients = api.search_profiles(query)
-    for client in clients:
-        pprint.pprint(client._json)
+    print(clients)
+    for client in clients.data:
+        pprint.pprint(client)
         print('\n---\n')
 
 if __name__ == '__main__':

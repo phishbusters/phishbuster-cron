@@ -1,5 +1,6 @@
 # Ignora la carpeta del entorno virtual
 phishbusters/
+env/
 
 # Ignora los archivos .pyc que se generan cuando ejecutas tu código Python
 *.pyc

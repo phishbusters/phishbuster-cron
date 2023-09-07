@@ -4,7 +4,7 @@ This project is a CRON job running on an AWS Lambda, connecting to the Twitter A
 
 ## Environment Setup
 
-1. **Install Python**: If you haven't done so already, install Python on your machine.
+1. **Install Python**: If you haven't done so already, install Python on your machine. We recommend to use Python 3.10. Newer versions seems to not be working well with scrapping libraries
 2. **Create a virtual environment**: In the root directory of your project, run the following command in your terminal to create a virtual environment:
 
 ```cmd

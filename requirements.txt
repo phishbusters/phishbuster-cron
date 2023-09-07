@@ -1,7 +1,11 @@
-tweepy
 pandas
 boto3
 python-dotenv
 pytest
 requests
 flake8
+playwright
+jmespath
+nested-lookup
+scrapfly-sdk[all]
+Cython
