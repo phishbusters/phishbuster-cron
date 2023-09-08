@@ -1,7 +1,8 @@
 import pandas as pd
 from collections import Counter
-from.sentiment_analysis import analyze_sentiment
+from .sentiment_analysis import analyze_sentiment
 import re
+
 
 def create_users_csv(user_objects):
     try:
@@ -40,7 +41,9 @@ def create_users_csv(user_objects):
         rows.append(row)
 
     new_df = pd.DataFrame(rows)
-    df = pd.concat([df, new_df]).drop_duplicates(subset='id', keep='last').reset_index(drop=True)
+    df = pd.concat([df, new_df
+                    ]).drop_duplicates(subset='id',
+                                       keep='last').reset_index(drop=True)
     df.to_csv('users.csv', sep='\t', index=False)
 
 
@@ -53,7 +56,7 @@ def create_tweets_csv(tweet_objects):
     rows = []
     for tweet in tweet_objects:
         text = tweet.full_text
-        sentiment = analyze_sentiment(text)
+        # sentiment = analyze_sentiment(text)
         row = {
             'tweet_id': tweet.rest_id,
             'user_id': tweet.user_id,
@@ -65,13 +68,16 @@ def create_tweets_csv(tweet_objects):
             'hashtags': ','.join(tweet.hashtags),
             'user_mentions': ','.join(tweet.user_mentions),
             'urls': ','.join(tweet.urls),
-            'sentiment': sentiment,
+            'sentiment': '',
         }
         rows.append(row)
 
     new_df = pd.DataFrame(rows)
-    df = pd.concat([df, new_df]).drop_duplicates(subset='tweet_id', keep='last').reset_index(drop=True)
+    df = pd.concat([df, new_df
+                    ]).drop_duplicates(subset='tweet_id',
+                                       keep='last').reset_index(drop=True)
     df.to_csv('tweets.csv', sep='\t', index=False)
+
 
 def update_users_csv():
     try:
@@ -89,10 +95,15 @@ def update_users_csv():
         user_id = user_row['id']
         user_tweets = tweets_df[tweets_df['user_id'] == user_id]
         response_count = user_tweets['in_reply_to_status_id_str'].count()
-        most_responded_user = user_tweets['in_reply_to_status_id_str'].mode().iloc[0] if not user_tweets['in_reply_to_status_id_str'].mode().empty else ''
-        retweet_ratio = user_tweets['retweet_count'].sum() / len(user_tweets) if len(user_tweets) > 0 else 0
-        total_engagement = user_tweets['retweet_count'].sum() + user_tweets['favorite_count'].sum()
-        engagement_rate = total_engagement / len(user_tweets) if len(user_tweets) > 0 else 0
+        most_responded_user = user_tweets['in_reply_to_status_id_str'].mode(
+        ).iloc[0] if not user_tweets['in_reply_to_status_id_str'].mode(
+        ).empty else ''
+        retweet_ratio = user_tweets['retweet_count'].sum() / len(
+            user_tweets) if len(user_tweets) > 0 else 0
+        total_engagement = user_tweets['retweet_count'].sum(
+        ) + user_tweets['favorite_count'].sum()
+        engagement_rate = total_engagement / len(user_tweets) if len(
+            user_tweets) > 0 else 0
         all_texts = ' '.join(user_tweets['text'].dropna())
         words = re.findall(r'\w+', all_texts.lower())
         top_words = Counter(words).most_common(5)
@@ -100,42 +111,60 @@ def update_users_csv():
         users_df.at[index, 'most_responded_user'] = most_responded_user
         users_df.at[index, 'retweet_ratio'] = retweet_ratio
         users_df.at[index, 'engagement_rate'] = engagement_rate
-        users_df.at[index, 'top_words'] = ', '.join([word for word, _ in top_words])
-        
+        users_df.at[index,
+                    'top_words'] = ', '.join([word for word, _ in top_words])
+
     users_df.to_csv('users_updated.csv', sep='\t', index=False)
+
 
 def calculate_additional_metrics():
     try:
         tweets_df = pd.read_csv('tweets.csv', sep='\t')
+        users_df = pd.read_csv('users_updated.csv', sep='\t')
     except FileNotFoundError:
         return
-    
-    # Inicializar nuevas columnas en el DataFrame de usuarios
-    users_df = pd.read_csv('users_updated.csv', sep='\t')
+
     users_df['hashtags_per_tweet'] = 0.0
     users_df['mentions_per_tweet'] = 0.0
     users_df['duplicate_content_ratio'] = 0.0
-    
+    users_df['is_fake'] = None
+
     for index, user_row in users_df.iterrows():
         user_id = user_row['id']
-        
+
         # Filtrar tweets de este usuario
         user_tweets = tweets_df[tweets_df['user_id'] == user_id]
-        
+
         if len(user_tweets) == 0:
             continue
-        
+
         # Calcular hashtags_per_tweet
-        total_hashtags = user_tweets['hashtags'].apply(lambda x: len(str(x).split(',')) if pd.notna(x) else 0).sum()
-        users_df.at[index, 'hashtags_per_tweet'] = total_hashtags / len(user_tweets)
-        
+        total_hashtags = user_tweets['hashtags'].apply(
+            lambda x: len(str(x).split(',')) if pd.notna(x) else 0).sum()
+        users_df.at[index,
+                    'hashtags_per_tweet'] = total_hashtags / len(user_tweets)
+
         # Calcular mentions_per_tweet
-        total_mentions = user_tweets['user_mentions'].apply(lambda x: len(str(x).split(',')) if pd.notna(x) else 0).sum()
-        users_df.at[index, 'mentions_per_tweet'] = total_mentions / len(user_tweets)
-        
+        total_mentions = user_tweets['user_mentions'].apply(
+            lambda x: len(str(x).split(',')) if pd.notna(x) else 0).sum()
+        users_df.at[index,
+                    'mentions_per_tweet'] = total_mentions / len(user_tweets)
+
         # Calcular duplicate_content_ratio
         unique_tweets = user_tweets['text'].nunique()
-        users_df.at[index, 'duplicate_content_ratio'] = (len(user_tweets) - unique_tweets) / len(user_tweets) if len(user_tweets) > 0 else 0
-    
+        users_df.at[index, 'duplicate_content_ratio'] = (
+            len(user_tweets) -
+            unique_tweets) / len(user_tweets) if len(user_tweets) > 0 else 0
+
     # Actualizar el archivo CSV de usuarios
     users_df.to_csv('users_final.csv', sep='\t', index=False)
+
+def update_sentiment_in_tweets_csv():
+    try:
+        df = pd.read_csv('tweets.csv', sep='\t')
+    except FileNotFoundError:
+        print("El archivo tweets.csv no se encontró.")
+        return
+
+    df['sentiment'] = df['text'].apply(analyze_sentiment)
+    df.to_csv('tweets.csv', sep='\t', index=False)

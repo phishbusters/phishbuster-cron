@@ -1,15 +1,25 @@
 import pandas as pd
 
+
 def read_last_processed(query):
     try:
         df = pd.read_csv("searched_database.csv")
     except FileNotFoundError:
-        # Si el archivo no existe, crear un DataFrame vacío
-        df = pd.DataFrame(columns=['SearchQuery', 'LastResultIndex', 'LastTweetIndex'])
+        df = pd.DataFrame(
+            columns=['SearchQuery', 'LastResultIndex', 'LastTweetIndex'])
 
-    record = df[df['SearchQuery'] == query].iloc[0] if df[df['SearchQuery'] == query].shape[0] > 0 else None
+    record = df[df['SearchQuery'] == query].iloc[0] if df[
+        df['SearchQuery'] == query].shape[0] > 0 else None
     if record is not None:
-        return record['LastResultIndex'], record['LastTweetIndex']
+        last_result_index = record['LastResultIndex']
+        last_tweet_index = record['LastTweetIndex']
+
+        if pd.isna(last_result_index) or last_result_index == '':
+            last_result_index = None
+        if pd.isna(last_tweet_index) or last_tweet_index == '':
+            last_tweet_index = None
+
+        return last_result_index, last_tweet_index
     else:
         return None, None
 
@@ -20,14 +30,15 @@ def update_last_processed(query, last_result_index, last_tweet_index):
         df = pd.read_csv("searched_database.csv")
     except FileNotFoundError:
         # Si el archivo no existe, crear un DataFrame vacío
-        df = pd.DataFrame(columns=['SearchQuery', 'LastResultIndex', 'LastTweetIndex'])
+        df = pd.DataFrame(
+            columns=['SearchQuery', 'LastResultIndex', 'LastTweetIndex'])
 
     df['LastResultIndex'] = df['LastResultIndex'].astype(str)
     df['LastTweetIndex'] = df['LastTweetIndex'].astype(str)
     # Verificar si la consulta ya está en el DataFrame
     mask = df['SearchQuery'] == query
 
-    profile_last_index  = last_result_index if last_result_index is not None else 0
+    profile_last_index = last_result_index if last_result_index is not None else 0
     twitt_last_index = last_tweet_index if last_tweet_index is not None else 0
     if mask.sum() > 0:
         # Actualizar el registro existente
@@ -37,7 +48,11 @@ def update_last_processed(query, last_result_index, last_tweet_index):
             df.loc[mask, 'LastTweetIndex'] = twitt_last_index
     else:
         # Agregar un nuevo registro
-        new_row = {'SearchQuery': query, 'LastResultIndex': profile_last_index, 'LastTweetIndex': twitt_last_index}
+        new_row = {
+            'SearchQuery': query,
+            'LastResultIndex': profile_last_index,
+            'LastTweetIndex': twitt_last_index
+        }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
 
     # Guardar el DataFrame actualizado

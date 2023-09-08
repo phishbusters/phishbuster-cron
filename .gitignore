@@ -2,6 +2,7 @@
 phishbusters/
 env/
 Twitter Saved Sessions/
+login_twitter.csv
 
 # Ignora los archivos .pyc que se generan cuando ejecutas tu código Python
 *.pyc

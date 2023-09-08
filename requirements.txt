@@ -1,6 +1,5 @@
 setuptools<58
 wheel
-twscrape
 tweeterpy
 pandas
 nltk
