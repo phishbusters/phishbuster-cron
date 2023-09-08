@@ -3,10 +3,11 @@ from time import sleep
 from googletrans import Translator
 from textblob import TextBlob
 from requests.exceptions import HTTPError
+import math
 
 def analyze_sentiment(text):
     try:
-        if text is None or text == '':
+        if text is None or text == '' or (isinstance(text, float) and math.isnan(text)):
             return 0
 
         # Verificar si el texto es una URL

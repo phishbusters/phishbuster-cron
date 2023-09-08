@@ -44,13 +44,13 @@ class TwitterDataCollector:
         return self.current_account > len(self.accounts)
 
     def login_next_account(self):
-        self.current_account += 1
         if self._is_next_account_available():
             raise Exception("No more accounts available for login.")
         
         account = self.accounts.iloc[self.current_account]
         print("logging in with account: ", account['username'])
         self.login(account['username'], account['password'])
+        self.current_account += 1
         self._add_or_update_account(account['username'], account['password'])
 
     def login(self, username, password):

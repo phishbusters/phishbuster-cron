@@ -159,12 +159,16 @@ def calculate_additional_metrics():
     # Actualizar el archivo CSV de usuarios
     users_df.to_csv('users_final.csv', sep='\t', index=False)
 
-def update_sentiment_in_tweets_csv():
+def update_tweet_sentiments():
     try:
         df = pd.read_csv('tweets.csv', sep='\t')
     except FileNotFoundError:
-        print("El archivo tweets.csv no se encontró.")
         return
 
-    df['sentiment'] = df['text'].apply(analyze_sentiment)
+    filtered_df = df[(df['sentiment'].isna()) | (df['sentiment'] == '') | (df['sentiment'] == 0)]
+    for index, row in filtered_df.iterrows():
+        text = row['text']
+        sentiment = analyze_sentiment(text)
+        df.loc[index, 'sentiment'] = sentiment
+
     df.to_csv('tweets.csv', sep='\t', index=False)
