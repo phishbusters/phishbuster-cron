@@ -20,9 +20,6 @@ class TwitterTweet:
     @classmethod
     def from_payload(cls, payload):
         legacy_data = payload.get('legacy', {})
-        user_data = payload.get('core', {}).get('user_results',
-                                                {}).get('result',
-                                                        {}).get('legacy', {})
         entities_data = legacy_data.get('entities', {})
         return cls(rest_id=payload.get('rest_id', ''),
                    user_id=legacy_data.get('user_id_str', ''),

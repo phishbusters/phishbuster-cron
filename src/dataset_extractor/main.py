@@ -1,7 +1,7 @@
 from .searched_database.processed_records import read_last_processed, update_last_processed
 from .data_classes.twitter_results import SearchResults, SearchUserItem
 from .data_classes.twitter_twitt import TwitterTweet
-from .extractor import create_users_csv, calculate_additional_metrics, create_tweets_csv, update_users_csv, update_sentiment_in_tweets_csv
+from .extractor import create_users_csv, calculate_additional_metrics, create_tweets_csv, update_users_csv, update_tweet_sentiments
 from ..lib_tweeterpy.scrap_tweeterpy import TwitterDataCollector
 import nltk
 
@@ -89,6 +89,6 @@ def exec_process(search_query, total_per_run=100):
     update_users_csv()
     print("Calculando métricas adicionales de los usuarios con los twitts...")
     calculate_additional_metrics()
-    print("Actualizando CSV de tweets con datos de sentimiento...")
-    update_sentiment_in_tweets_csv()
+    # print("Actualizando CSV de tweets con datos de sentimiento...")
+    # update_tweet_sentiments()
     print("Proceso finalizado")

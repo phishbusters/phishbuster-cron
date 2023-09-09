@@ -72,11 +72,8 @@ class TwitterDataCollector:
             api_rate_limit = payload.get('api_rate_limit', False)
             limit_exhausted = api_rate_limit.get("rate_limit_exhausted")
             if has_next_page and limit_exhausted:
-                if self._is_next_account_available():
-                    self.login_next_account()
-                    return self.search_users(query, end_cursor, total)
-                else:
-                    raise RateLimitError
+                self.login_next_account()
+                return self.search_users(query, end_cursor, total)
 
             return payload
         except HTTPError as e:
@@ -85,6 +82,9 @@ class TwitterDataCollector:
                 return self.search_users(query, end_cursor, total)
             else:
                 raise e
+        except RateLimitError:
+            self.login_next_account()
+            return self.search_users(query, end_cursor, total)
 
     def get_user_info_by_id(self, user_id):
         return self.twitter.get_user_info(user_id)
@@ -109,11 +109,8 @@ class TwitterDataCollector:
             api_rate_limit = payload.get('api_rate_limit', False)
             limit_exhausted = api_rate_limit.get("rate_limit_exhausted")
             if has_next_page and limit_exhausted:
-                if self._is_next_account_available():
-                    self.login_next_account()
-                    return self.get_user_tweets(user_id, with_replies, total)
-                else:
-                    raise RateLimitError
+                self.login_next_account()
+                return self.get_user_tweets(user_id, with_replies, total)
 
             return payload
         except HTTPError as e:
@@ -122,6 +119,9 @@ class TwitterDataCollector:
                 return self.get_user_tweets(user_id, with_replies, total)
             else:
                 raise e
+        except RateLimitError:
+            self.login_next_account()
+            return self.get_user_tweets(user_id, with_replies, total)
 
     def get_tweet_details(self,
                           tweet_id,

@@ -4,15 +4,15 @@ import time
 
 def main():
     search_queries = [
-        'Personal',
-        'Netflix',
-        'ICBC',
+        'Lionel Messi',
+        'Javier Milei',
+        'Uala Argentina',
         'Agustin Laje',
+        'Personal',
+        'Netflix Argentina',
+        'ICBC Argentina',
         'Jennifer Aniston',
         'Asesor',
-        'Uala Argentina',
-        'Javier Milei',
-        'Lionel Messi',
         'Banco Santander',
         'Banco Galicia',
         'Banco Macro',
@@ -43,12 +43,14 @@ def main():
             exec_process(search_query, 100)
 
             if index + 1 <= len(search_queries):
-                print("Esperando 5 minutos...")
-                time.sleep(300)
+                print("Esperando 1 minuto...")
+                time.sleep(60)
                 index += 1
 
         print("Scrapping finalizado.")
         break
+    
+    exit(0)
 
 
 if __name__ == "__main__":

@@ -3,12 +3,29 @@ from collections import Counter
 from .sentiment_analysis import analyze_sentiment
 import re
 
-
-def create_users_csv(user_objects):
+def _read_users_csv():
     try:
-        df = pd.read_csv('users.csv', sep='\t')
+        df = pd.read_csv('users.csv', sep='\t', dtype={'id': str})
     except FileNotFoundError:
         df = pd.DataFrame()
+    return df
+
+def _read_tweets_csv():
+    try:
+        df = pd.read_csv('tweets.csv', sep='\t', dtype={'user_id': str, 'tweet_id': str})
+    except FileNotFoundError:
+        df = pd.DataFrame()
+    return df
+
+def _read_users_updated_csv():
+    try:
+        df = pd.read_csv('users_updated.csv', sep='\t', dtype={'id': str})
+    except FileNotFoundError:
+        df = pd.DataFrame()
+    return df
+
+def create_users_csv(user_objects):
+    df = _read_users_csv()
 
     rows = []
     for user in user_objects:
@@ -48,18 +65,15 @@ def create_users_csv(user_objects):
 
 
 def create_tweets_csv(tweet_objects):
-    try:
-        df = pd.read_csv('tweets.csv', sep='\t')
-    except FileNotFoundError:
-        df = pd.DataFrame()
+    df = _read_tweets_csv()
 
     rows = []
     for tweet in tweet_objects:
         text = tweet.full_text
         # sentiment = analyze_sentiment(text)
         row = {
-            'tweet_id': tweet.rest_id,
-            'user_id': tweet.user_id,
+            'tweet_id': str(tweet.rest_id),
+            'user_id': str(tweet.user_id),
             'text': text,
             'created_at': tweet.created_at,
             'retweet_count': tweet.retweet_count,
@@ -76,24 +90,27 @@ def create_tweets_csv(tweet_objects):
     df = pd.concat([df, new_df
                     ]).drop_duplicates(subset='tweet_id',
                                        keep='last').reset_index(drop=True)
+    
+    df['tweet_id'] = df['tweet_id'].astype(str)
+    df['user_id'] = df['user_id'].astype(str)
     df.to_csv('tweets.csv', sep='\t', index=False)
 
 
 def update_users_csv():
-    try:
-        users_df = pd.read_csv('users.csv', sep='\t')
-        tweets_df = pd.read_csv('tweets.csv', sep='\t')
-    except FileNotFoundError:
-        return
+    users_df = _read_users_csv()
+    tweets_df = _read_tweets_csv()
 
+    tweets_df = tweets_df.dropna(subset=['tweet_id', 'user_id'])
     users_df['response_count'] = 0
     users_df['most_responded_user'] = ''
     users_df['retweet_ratio'] = 0.0
     users_df['engagement_rate'] = 0.0
     users_df['top_words'] = ''
+
     for index, user_row in users_df.iterrows():
         user_id = user_row['id']
         user_tweets = tweets_df[tweets_df['user_id'] == user_id]
+
         response_count = user_tweets['in_reply_to_status_id_str'].count()
         most_responded_user = user_tweets['in_reply_to_status_id_str'].mode(
         ).iloc[0] if not user_tweets['in_reply_to_status_id_str'].mode(
@@ -107,6 +124,8 @@ def update_users_csv():
         all_texts = ' '.join(user_tweets['text'].dropna())
         words = re.findall(r'\w+', all_texts.lower())
         top_words = Counter(words).most_common(5)
+        tweets_count = int(len(user_tweets))
+        users_df.at[index, 'tweets_count'] = tweets_count
         users_df.at[index, 'response_count'] = response_count
         users_df.at[index, 'most_responded_user'] = most_responded_user
         users_df.at[index, 'retweet_ratio'] = retweet_ratio
@@ -118,11 +137,8 @@ def update_users_csv():
 
 
 def calculate_additional_metrics():
-    try:
-        tweets_df = pd.read_csv('tweets.csv', sep='\t')
-        users_df = pd.read_csv('users_updated.csv', sep='\t')
-    except FileNotFoundError:
-        return
+    tweets_df = _read_tweets_csv()
+    users_df = _read_users_updated_csv()
 
     users_df['hashtags_per_tweet'] = 0.0
     users_df['mentions_per_tweet'] = 0.0
@@ -160,10 +176,7 @@ def calculate_additional_metrics():
     users_df.to_csv('users_final.csv', sep='\t', index=False)
 
 def update_tweet_sentiments():
-    try:
-        df = pd.read_csv('tweets.csv', sep='\t')
-    except FileNotFoundError:
-        return
+    df = _read_tweets_csv()
 
     filtered_df = df[(df['sentiment'].isna()) | (df['sentiment'] == '') | (df['sentiment'] == 0)]
     for index, row in filtered_df.iterrows():
