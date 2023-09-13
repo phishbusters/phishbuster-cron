@@ -1,7 +1,7 @@
 from .searched_database.processed_records import read_last_processed, update_last_processed
 from .data_classes.twitter_results import SearchResults, SearchUserItem
 from .data_classes.twitter_twitt import TwitterTweet
-from .extractor import create_users_csv, calculate_additional_metrics, create_tweets_csv, update_users_csv, update_tweet_sentiments
+from .extractor import create_users_csv, calculate_additional_metrics, create_tweets_csv, update_users_csv, update_tweet_sentiments, calculate_and_update_user_features
 from ..lib_tweeterpy.scrap_tweeterpy import TwitterDataCollector
 import nltk
 
@@ -28,8 +28,12 @@ def scrape_data(collector, search_query, total_per_run=100):
     return user_payloads
 
 
-def scrape_tweets(collector, user_payloads, search_query, total_per_run=100):
-    _, last_tweet_cursor = read_last_processed(search_query)
+def scrape_tweets(collector, user_payloads, search_query=None, total_per_run=100, with_replies=True):
+    if search_query is not None:
+        _, last_tweet_cursor = read_last_processed(search_query)
+    else:
+        last_tweet_cursor = None
+
     tweets_payloads = []
 
     try:
@@ -38,7 +42,7 @@ def scrape_tweets(collector, user_payloads, search_query, total_per_run=100):
             user_tweets_payload = collector.get_user_tweets(
                 user.id,
                 end_cursor=last_tweet_cursor,
-                with_replies=True,
+                with_replies=with_replies,
                 total=total_per_run)
             tweet_data = user_tweets_payload.get('data', [])
             cursor_endpoint = user_tweets_payload.get('cursor_endpoint', None)
@@ -50,8 +54,9 @@ def scrape_tweets(collector, user_payloads, search_query, total_per_run=100):
                 tweets_payloads.append(
                     TwitterTweet.from_payload(tweet_content))
 
-            if has_next_page and cursor_endpoint:
-                update_last_processed(search_query, None, cursor_endpoint)
+            if search_query is not None:
+                if has_next_page and cursor_endpoint:
+                    update_last_processed(search_query, None, cursor_endpoint)
 
     except Exception as e:
         print(e)
@@ -76,12 +81,13 @@ def exec_process(search_query, total_per_run=100):
     print("Datos obtenidos", len(user_payloads))
     print("Creando CSV de usuarios...")
     create_users_csv(user_payloads)
-    # tweets_limit_cap = int(total_per_run / 10)
-    tweets_limit_cap = total_per_run
+    
+    tweets_limit_cap = 30
     print("Buscando tweets para: ", len(user_payloads), " usuarios...")
     tweets_payloads = scrape_tweets(
         collector, user_payloads, search_query,
-        tweets_limit_cap if tweets_limit_cap > 0 else 1)
+        with_reply=False,
+        total=tweets_limit_cap if tweets_limit_cap > 0 else 1)
     print("Datos obtenidos", len(tweets_payloads))
     print("Creando CSV de tweets...")
     create_tweets_csv(tweets_payloads)
@@ -91,4 +97,5 @@ def exec_process(search_query, total_per_run=100):
     calculate_additional_metrics()
     # print("Actualizando CSV de tweets con datos de sentimiento...")
     # update_tweet_sentiments()
+    calculate_and_update_user_features()
     print("Proceso finalizado")

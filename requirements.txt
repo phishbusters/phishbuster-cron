@@ -1,7 +1,11 @@
-setuptools<58
-wheel
 tweeterpy
 pandas
 nltk
 textblob
 googletrans==4.0.0rc1
+keras 
+numpy 
+scipy
+requests 
+pillow
+tensorflow

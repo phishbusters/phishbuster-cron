@@ -90,7 +90,17 @@ class TwitterDataCollector:
         return self.twitter.get_user_info(user_id)
 
     def get_user_info_by_username(self, username):
-        return self.twitter.get_user_data(username)
+        try:
+            return self.twitter.get_user_data(username)
+        except HTTPError as e:
+            if e.response.status == 429:
+                time.sleep(60)
+                return self.get_user_info_by_username(username)
+            else:
+                raise e
+        except RateLimitError:
+            self.login_next_account()
+            return self.get_user_info_by_username(username)
 
     def get_multiple_users_info(self, user_ids):
         return self.twitter.get_multiple_users_data(user_ids)

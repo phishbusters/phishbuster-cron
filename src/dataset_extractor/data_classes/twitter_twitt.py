@@ -16,6 +16,7 @@ class TwitterTweet:
     user_mentions: list[str]
     urls: list[str]
     sentiment: str = ''
+    has_image: bool = False
 
     @classmethod
     def from_payload(cls, payload):
@@ -42,4 +43,5 @@ class TwitterTweet:
                    urls=[
                        url['expanded_url']
                        for url in entities_data.get('urls', [])
-                   ])
+                   ],
+                   has_image='media' in legacy_data.get('entities', {}))

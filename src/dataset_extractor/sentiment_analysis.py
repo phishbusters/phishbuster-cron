@@ -10,14 +10,9 @@ def analyze_sentiment(text):
         if text is None or text == '' or (isinstance(text, float) and math.isnan(text)):
             return 0
 
-        # Verificar si el texto es una URL
-        url_pattern = re.compile(
-            r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-        )
-        www_pattern = re.compile(
-            r'www\.(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-        )
-        if url_pattern.match(text) or www_pattern.match(text):
+        # Eliminar URLs del texto
+        text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
+        if text.strip() == '':
             return 0
 
         translator = Translator(service_urls=['translate.google.com'])

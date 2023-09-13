@@ -4,36 +4,40 @@ import time
 
 def main():
     search_queries = [
-        'Lionel Messi',
-        'Javier Milei',
-        'Uala Argentina',
-        'Agustin Laje',
-        'Personal',
-        'Netflix Argentina',
-        'ICBC Argentina',
-        'Jennifer Aniston',
-        'Asesor',
-        'Banco Santander',
-        'Banco Galicia',
-        'Banco Macro',
-        'Banco BBVA',
-        'Banco Hipotecario',
-        'Banco Nacion',
-        'Banco Ciudad',
-        'Banco Patagonia',
-        'Banco Supervielle',
-        'Banco Comafi',
-        'Banco Itau',
-        'UADE',
-        'UBA',
-        'UTN',
-        'UNLP',
-        'UNLaM',
-        'Google',
-        'Amazon',
-        'Apple',
-        'Microsoft',
-        'Facebook',
+        'Aerolineas Argentinas',
+        'lemon argentina',
+        'paypal',
+        'airtm'
+        # 'UADE',
+        # 'Lionel Messi',
+        # 'Javier Milei',
+        # 'Uala Argentina',
+        # 'Agustin Laje',
+        # 'Personal',
+        # 'Netflix Argentina',
+        # 'ICBC Argentina',
+        # 'Jennifer Aniston',
+        # 'Asesor',
+        # 'Banco Santander',
+        # 'Banco Galicia',
+        # 'Banco Macro',
+        # 'Banco BBVA',
+        # 'Banco Hipotecario',
+        # 'Banco Nacion',
+        # 'Banco Ciudad',
+        # 'Banco Patagonia',
+        # 'Banco Supervielle',
+        # 'Banco Comafi',
+        # 'Banco Itau',
+        # 'UBA',
+        # 'UTN',
+        # 'UNLP',
+        # 'UNLaM',
+        # 'Google',
+        # 'Amazon',
+        # 'Apple',
+        # 'Microsoft',
+        # 'Facebook',
     ]
 
     while True:  # Bucle infinito
@@ -43,8 +47,8 @@ def main():
             exec_process(search_query, 100)
 
             if index + 1 <= len(search_queries):
-                print("Esperando 1 minuto...")
-                time.sleep(60)
+                print("Esperando 2 minutos...")
+                time.sleep(120)
                 index += 1
 
         print("Scrapping finalizado.")

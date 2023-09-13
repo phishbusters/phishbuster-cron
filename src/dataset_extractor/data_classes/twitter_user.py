@@ -27,6 +27,9 @@ class TwitterUser:
     has_custom_timelines: bool
     has_verification_info: bool
     possibly_sensitive: bool
+    profile_banner_https: str
+    profile_image_url_https: str
+    created_at: str
 
     @classmethod
     def from_payload(cls, payload):
@@ -66,4 +69,8 @@ class TwitterUser:
                                                  False),
             has_verification_info=payload.get('verification_info', ''),
             possibly_sensitive=legacy_data.get('possibly_sensitive', False),
+            profile_banner_https=legacy_data.get('profile_banner_url', ''),
+            profile_image_url_https=legacy_data.get('profile_image_url_https',
+                                                    ''),
+            created_at=legacy_data.get('created_at', '')
         )
