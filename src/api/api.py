@@ -101,7 +101,8 @@ def predict():
             'confidence': 1.0,
             'combined_confidence': 1.0,
             'prediction_label': 'real',
-            'prediction_time': prediction_time
+            'prediction_time': prediction_time,
+            'related_company': closest_company,
         })
 
     if closest_company is not None:
@@ -136,7 +137,8 @@ def predict():
         'confidence': confidence,
         'combined_confidence': combined_confidence,
         'prediction_label': prediction_label,
-        'prediction_time': prediction_time
+        'prediction_time': prediction_time,
+        'related_company': closest_company,
     })
 
 if __name__ == '__main__':
