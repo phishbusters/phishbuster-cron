@@ -212,6 +212,10 @@ def calculate_and_update_user_features(users_df, tweets_df):
 
 
 def update_tweet_sentiments(tweets_df):
+    if 'sentiment' not in tweets_df.columns:
+        print("La columna 'sentiment' no existe en el DataFrame.")
+        return tweets_df  # O manejar de otra manera, según sea necesario
+     
     filtered_df = tweets_df[(tweets_df['sentiment'].isna()) |
                             (tweets_df['sentiment'] == '') |
                             (tweets_df['sentiment'] == 0)]
