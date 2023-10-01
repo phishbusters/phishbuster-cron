@@ -25,6 +25,8 @@ class TwitterDataCollector:
             accounts_df = pd.read_csv(self.loginDatabaseFile, sep='\t')
         except FileNotFoundError:
             accounts_df = pd.DataFrame(columns=['username', 'password', 'lastLogin'])
+            accounts_df['username'] = ['NG1086750_3']
+            accounts_df['password'] = ['Uade1234']
             accounts_df.to_csv(self.loginDatabaseFile, sep='\t', index=False)
 
         return accounts_df

@@ -1,21 +1,25 @@
 from flask import Flask, request, jsonify
+from datetime import datetime
+from dotenv import load_dotenv
 import pandas as pd
+import os
 import joblib
 
 from .transformations import exec
-from .mongo_connection import connect_to_mongodb, find_closest_company_user, find_digital_assets
+from .mongo_connection import connect_to_mongodb, find_closest_company_user, find_digital_assets, check_social_network_url_in_assets
 from ..dataset_extractor.data_classes.twitter_user import TwitterUser
 from ..dataset_extractor.data_classes.twitter_twitt import TwitterTweet
 from ..lib_tweeterpy.scrap_tweeterpy import TwitterDataCollector
-from ..utils.levenstein import levenshtein_distance
-from ..utils.image_comparision import image_comparison
+from ..utils.image_comparision import image_similarity
 
 app = Flask(__name__)
 scaler = joblib.load('profile-model-scaler.pkl')
 model = joblib.load('profile-detection-model.pkl')
 db = None
+twitter_collector = TwitterDataCollector()
 
 def preprocess_profile(df_profile):
+    df_profile = df_profile.copy()
     expected_columns_order = [
         'statuses_count', 'followers_count', 'friends_count',
         'favourites_count', 'listed_count', 'followers_to_following_ratio',
@@ -61,12 +65,11 @@ def preprocess_profile(df_profile):
     df_profile = df_profile[expected_columns_order]
     return df_profile
 
-# Función para hacer una predicción con confianza
 def make_prediction_with_confidence(model, df_profile):
     df_preprocessed = preprocess_profile(df_profile)
     prediction = model.predict(df_preprocessed)
     prediction_proba = model.predict_proba(df_preprocessed)
-    confidence = prediction_proba[0][prediction[0]]  # Asumiendo que solo hay una instancia
+    confidence = prediction_proba[0][int(prediction[0])]
     return prediction, confidence
 
 @app.route('/predict/profile', methods=['POST'])
@@ -74,21 +77,11 @@ def predict():
     screen_name = request.json['screen_name']
     if not screen_name:
         return jsonify({'error': 'screen_name is required'}), 400
-
-    # # Buscar el usuario y los activos digitales más cercanos
-    # closest_user = find_closest_company_user(screen_name, db, db['User'])
-    # digital_assets = find_digital_assets(closest_user, db, db['DigitalAsset'])
     
-    # # Comparaciones
-    # leven_distance_with_company = levenshtein_distance(screen_name, closest_user['company']['companyName'])
-    # image_similarity_score = image_comparison(user_info.profile_image, closest_user['company']['profile_image'])
-
-    # Inicializa tu clase TwitterDataCollector
-    twitter_collector = TwitterDataCollector()
     user_id = twitter_collector.get_user_id(screen_name)
     user_info = twitter_collector.get_user_info(user_id)
     user_info = TwitterUser.from_payload(user_info)
-    tweets = twitter_collector.get_user_tweets(user_id, total=50)
+    tweets = twitter_collector.get_user_tweets(user_id, total=10)
     tweets_data = tweets.get('data', [])
     twitterTweets = []
     for tweet in tweets_data:
@@ -97,15 +90,60 @@ def predict():
                                            {}).get('result', {})
         twitterTweets.append(TwitterTweet.from_payload(tweet_content))
 
+    closest_company = find_closest_company_user(user_info.name, db['users'])
+    image_similarity_score = None
+    is_real_active = check_social_network_url_in_assets(screen_name, db['digitalassets'])
+    if is_real_active is True:
+        prediction_time = datetime.now().isoformat()
+        return jsonify({ 
+            'prediction': [0.0], 
+            'model_prediction_label': 'real',
+            'confidence': 1.0,
+            'combined_confidence': 1.0,
+            'prediction_label': 'real',
+            'prediction_time': prediction_time
+        })
+
+    if closest_company is not None:
+        digital_assets = find_digital_assets(closest_company, db['digitalassets'])
+        image_assets = [asset for asset in digital_assets if asset['assetType'] == 'Image']
+        for asset in image_assets:
+            image_similarity_score = image_similarity(user_info.profile_image_url_https, asset['assetContent'])
+            print('Image Similarity: ', image_similarity_score)
+            if image_similarity_score > 0.3:
+                break
+
     user_df = exec([user_info], twitterTweets)
     user_df.to_csv('received requests.csv', sep='\t')
     preprocessed_data = preprocess_profile(user_df)
 
-    print(preprocessed_data.to_dict(orient='list'))
-    prediction, confidence = make_prediction_with_confidence(model, user_df)
-    return jsonify({ 'prediction': prediction.tolist(), 'confidence': confidence })
+    prediction, confidence = make_prediction_with_confidence(model, preprocessed_data)
+    combined_confidence = confidence
+    if image_similarity_score is not None:
+        combined_confidence = (0.9 * confidence) + (0.1 * image_similarity_score)
+
+    if combined_confidence > 0.6:
+        prediction_label = "real"
+    else:
+        prediction_label = "fake"
+
+    print("predicted: ", prediction, " with confidence: ", confidence)
+    model_prediction_label = "fake" if prediction[0] == 1.0 else "real"
+    prediction_time = datetime.now().isoformat()
+    return jsonify({ 
+        'prediction': prediction.tolist(), 
+        'model_prediction_label': model_prediction_label,
+        'confidence': confidence,
+        'combined_confidence': combined_confidence,
+        'prediction_label': prediction_label,
+        'prediction_time': prediction_time
+    })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    # Especifica la ruta al archivo .env
+    # dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env'))
+    is_loaded = load_dotenv() 
+    print(f"Dotenv loaded: {is_loaded}")
     db = connect_to_mongodb()
+    app.run(host='0.0.0.0', debug=True)
 

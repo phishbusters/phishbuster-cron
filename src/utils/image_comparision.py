@@ -33,9 +33,9 @@ def image_comparison(image1_path, image2_path, threshold=0.7):
 def load_and_preprocess_image(image_path_or_url):
     if image_path_or_url.startswith('http://') or image_path_or_url.startswith('https://'):
         response = requests.get(image_path_or_url)
-        img = Image.open(BytesIO(response.content)).resize((224, 224))
+        img = Image.open(BytesIO(response.content)).convert('RGB').resize((224, 224))
     else:
-        img = Image.open(image_path_or_url).resize((224, 224))
+        img = Image.open(image_path_or_url).convert('RGB').resize((224, 224))
 
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)

@@ -17,6 +17,11 @@ def levenshtein_distance(s1, s2):
 
     return previous_row[-1]
 
+def normalized_levenshtein(s1, s2):
+    distance = levenshtein_distance(s1, s2)
+    length = max(len(s1), len(s2))
+    return distance / length if length > 0 else 0.0
+
 if __name__ == "__main__":
     leven = levenshtein_distance("apple", "apl") # should be 2
     print(leven)

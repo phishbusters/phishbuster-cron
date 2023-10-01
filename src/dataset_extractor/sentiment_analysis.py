@@ -1,6 +1,6 @@
 import re
 from time import sleep
-from googletrans import Translator
+from google_trans_new import google_translator
 from textblob import TextBlob
 from requests.exceptions import HTTPError
 import math
@@ -15,8 +15,9 @@ def analyze_sentiment(text):
         if text.strip() == '':
             return 0
 
-        translator = Translator(service_urls=['translate.google.com'])
-        translated = translator.translate(text, dest='en')
+        # translator = Translator(service_urls=['translate.google.com'])
+        translator = google_translator() 
+        translated = translator.translate(text, lang_tgt='en')
         if translated and translated.text:
             blob = TextBlob(translated.text)
             return blob.sentiment.polarity
