@@ -9,3 +9,8 @@ scipy
 requests 
 pillow
 tensorflow
+flask
+scikit-learn
+boto3
+pymongo
+dnspython==2.3.0

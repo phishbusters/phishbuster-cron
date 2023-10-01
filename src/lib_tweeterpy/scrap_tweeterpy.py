@@ -88,6 +88,12 @@ class TwitterDataCollector:
 
     def get_user_info_by_id(self, user_id):
         return self.twitter.get_user_info(user_id)
+    
+    def get_user_info(self, user_id):
+        return self.twitter.get_user_info(user_id)
+
+    def get_user_id(self, screen_name):
+        return self.twitter.get_user_id(screen_name)
 
     def get_user_info_by_username(self, username):
         try:

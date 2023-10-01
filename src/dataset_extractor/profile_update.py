@@ -50,5 +50,5 @@ def update_profiles():
 
 
 if __name__ == "__main__":
-    # update_profiles()
-    update_with_manual_classifications()
+    update_profiles()
+    # update_with_manual_classifications()
