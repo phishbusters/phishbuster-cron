@@ -93,7 +93,7 @@ def predict():
     closest_company = find_closest_company_user(user_info.name, db['users'])
     image_similarity_score = None
     is_real_active = check_social_network_url_in_assets(screen_name, db['digitalassets'])
-    related_company = closest_company['company']['companyName']
+    related_company = closest_company['company']['companyName'] if closest_company is not None else ''
     if is_real_active is True:
         prediction_time = datetime.now().isoformat()
         return jsonify({ 
