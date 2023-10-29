@@ -2,7 +2,6 @@ tweeterpy
 pandas
 nltk
 textblob
-# googletrans==4.0.0rc1
 deep_translator
 keras 
 numpy 
@@ -12,7 +11,6 @@ pillow
 tensorflow
 flask
 scikit-learn
-# boto3
 pymongo
 dnspython==2.3.0
 python-dotenv

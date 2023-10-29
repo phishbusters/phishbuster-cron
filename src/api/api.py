@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import os
 import joblib
+import urllib3
 
 from .transformations import exec
 from .mongo_connection import connect_to_mongodb, find_closest_company_user, find_digital_assets, check_social_network_url_in_assets
@@ -12,6 +13,7 @@ from ..dataset_extractor.data_classes.twitter_twitt import TwitterTweet
 from ..lib_tweeterpy.scrap_tweeterpy import TwitterDataCollector
 from ..utils.image_comparision import image_similarity
 
+urllib3.disable_warnings()
 app = Flask(__name__)
 scaler = joblib.load('profile-model-scaler.pkl')
 model = joblib.load('profile-detection-model.pkl')

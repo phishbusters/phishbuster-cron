@@ -16,6 +16,7 @@ def connect_to_mongodb():
         print(f"Conectando a MongoDB en {db_ip}:{db_port}...")
         client = MongoClient(f"mongodb://{db_user}:{db_password}@{db_ip}:{int(db_port)}/")
         db = client[db_name]
+        print("Conexión exitosa")
         return db
     except Exception as e:
         print(f"Error al conectar con MongoDB: {e}")
